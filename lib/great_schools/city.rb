@@ -34,7 +34,7 @@ module GreatSchools # :nodoc:
 
         response = GreatSchools::API.get("cities/nearby/#{state.upcase}/#{parameterize(city)}", options)
 
-        Array.wrap(response).map { |city| new(city.merge(state: state)) }
+        Array.wrap(response).map { |city| new(city.merge(:state => state)) }
       end
 
       # Returns information about a city.
@@ -46,7 +46,7 @@ module GreatSchools # :nodoc:
       def overview(state, city)
         response = GreatSchools::API.get("cities/#{state.upcase}/#{parameterize(city)}")
 
-        new(response.merge(state: state))
+        new(response.merge(:state => state))
       end
     end
 

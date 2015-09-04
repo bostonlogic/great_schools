@@ -61,20 +61,28 @@ module GreatSchools
       # * +path+        - component path of the URL
       # * +parameters+  - +Hash+ of query string elements
       def get(path, parameters = {})
-        parameters.merge!(key: key).keep_if { |_,v| v.present? }
+        parameters.merge!(:key => key).delete_if { |_,v| v.blank? }
+        
+        response = Curl::Easy.http_get("#{DOMAIN}/#{path}?#{to_query_string(parameters)}")
 
-        response = HTTParty.get("#{DOMAIN}/#{path}", query: parameters, format: :xml)
-
-        if response.code.eql?(200)
-          parse(response.values.first) # strip the container element before parsing
-        elsif response.body.blank?
+        if response.body_str.present?
+          data = MultiXml.parse(response.body_str)
+          parse(data.values.first) # strip the container element before parsing
+        elsif response.body_str.blank?
           nil # no error to parse, return nothing
-        else
-          raise GreatSchools::Error.new(response)
+        #else
+        #  raise GreatSchools::Error.new(response)
         end
       end
 
     private
+      def to_query_string(params)
+        params.delete_if{|_, v| v.nil?}.to_a.map{|key, value| "#{escape(key)}=#{escape(value)}"}.join('&')
+      end
+
+      def escape(object)
+        object.kind_of?(Array) ? object.map{|v| CGI.escape(v.to_s)}.join('+') : CGI.escape(object.to_s)
+      end
 
       # Returns a +Hash+ of a single element, or an +Array+ of elements without
       # the container hash.
