@@ -20,7 +20,8 @@ require 'active_support/core_ext/hash/slice'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/try'
 
-require 'httparty'
+require 'curb'
+require 'multi_xml'
 
 # = GreatSchools
 #
@@ -44,7 +45,7 @@ module GreatSchools
   # ++
   class API
     class << self # Class methods
-      DOMAIN = 'http://api.greatschools.org'
+      DOMAIN = 'https://api.greatschools.org'
 
       # The API access key, must be set before making any requests.
       attr_accessor :key
@@ -62,7 +63,7 @@ module GreatSchools
       # * +parameters+  - +Hash+ of query string elements
       def get(path, parameters = {})
         parameters.merge!(:key => key).delete_if { |_,v| v.blank? }
-        
+
         response = Curl::Easy.http_get("#{DOMAIN}/#{path}?#{to_query_string(parameters)}")
 
         if response.body_str.present?
