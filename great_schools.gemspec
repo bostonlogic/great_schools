@@ -26,6 +26,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec'
 
   spec.add_dependency 'activesupport', '>= 3.0.0'
-  spec.add_dependency 'curb', '~> 0.9.0'
+  spec.add_dependency 'curb', '~> 0.8.0'
   spec.add_dependency 'multi_xml'
 end
