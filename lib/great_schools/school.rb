@@ -85,14 +85,13 @@ module GreatSchools # :nodoc:
       # ++
       def nearby(state, options = {})
         options[:lat]             = options.delete(:latitude)
-        options[:levelCode]       = options.delete(:level)
         options[:lon]             = options.delete(:longitude)
-        options[:minimumSchools]  = options.delete(:minimum_schools)
-        options[:schoolType]      = options.delete(:school_types).try(:join, '-')
-        options[:state]           = state
-        options[:zip]             = options.delete(:zip_code)
+        options[:level_codes]     = options.delete(:level)
+        options[:school_type]     = options.delete(:school_types).try(:join, ' or ')
+        options[:school_type]     = "(#{options[:school_type]})" if options[:school_type].present?
+        options[:distance]        = options.delete(:radius)
 
-        options.slice!(:address, :city, :lat, :levelCode, :limit, :lon, :minimumSchools, :radius, :schoolType, :state, :zip)
+        options.slice!(:address, :city, :lat, :level_codes, :limit, :lon, :distance, :school_type)
 
         response = GreatSchools::API.get('nearby-schools', options)
 
