@@ -45,7 +45,7 @@ module GreatSchools
   # ++
   class API
     class << self # Class methods
-      DOMAIN = 'https://api.greatschools.org'
+      DOMAIN = 'https://gs-api.greatschools.org'
 
       # The API access key, must be set before making any requests.
       attr_accessor :key
@@ -62,13 +62,16 @@ module GreatSchools
       # * +path+        - component path of the URL
       # * +parameters+  - +Hash+ of query string elements
       def get(path, parameters = {})
-        parameters.merge!(:key => key).delete_if { |_,v| v.blank? }
+        parameters.delete_if { |_,v| v.blank? }
 
-        response = Curl::Easy.http_get("#{DOMAIN}/#{path}?#{to_query_string(parameters)}")
+        response = Curl::Easy.http_get("#{DOMAIN}/#{path}?#{to_query_string(parameters)}") do |c|
+          c.headers['x-api-key'] = key
+          c.headers['Accept'] = 'application/xml'
+        end
 
         if response.body_str.present?
           data = MultiXml.parse(response.body_str)
-          parse(data.values.first) # strip the container element before parsing
+          parse(data) # strip the container element before parsing
         elsif response.body_str.blank?
           nil # no error to parse, return nothing
         #else

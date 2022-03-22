@@ -2,13 +2,21 @@ module GreatSchools # :nodoc:
   # = GreatSchools School
   class School < Model
     attr_accessor :id, :name, :type, :grade_range, :enrollment, :district_id, :district, :district_nces_id, :nces_id
-    attr_accessor :city, :state, :address, :phone, :fax, :website, :latitude, :longitude
+    attr_accessor :street, :city, :state, :zip, :county, :phone, :fax, :website, :latitude, :longitude
     attr_accessor :overview_link, :ratings_link, :reviews_link, :school_stats_link, :parent_reviews, :rating, :parent_rating
 
     alias_method :gs_id=, :id=
     alias_method :gs_rating=, :rating=
     alias_method :lat=, :latitude=
     alias_method :lon=, :longitude=
+    alias_method :web_site=, :website=
+    alias_method :district_name, :district=
+    alias_method :level, :grade_range=
+    
+
+    def address
+      "#{street}, #{city}, #{state} #{zip}"
+    end
 
     class << self # Class methods
       # Returns a list of schools in a city.
@@ -36,15 +44,11 @@ module GreatSchools # :nodoc:
       # TODO: handle validations
       # ++
       def browse(state, city, options = {})
-        school_types  = Array.wrap(options.delete(:school_types)).join('-')
-        level         = options.delete(:level)
-
-        url = "schools/#{state.upcase}/#{parameterize(city)}"
-        url << "/#{school_types}" if school_types.present?
-        url << "/#{level}"        if level.present?
-
-        response = GreatSchools::API.get(url, options.slice(:sort, :limit))
-
+        options[:city] = city
+        options[:state] = state.upcase
+        options[:level_codes] = options.delete(:level)
+        options[:school_type] = Array.wrap(options.delete(:school_types)).join('-')
+        response = GreatSchools::API.get('schools', options)
         Array.wrap(response).map { |school| new(school) }
       end
 
@@ -90,7 +94,7 @@ module GreatSchools # :nodoc:
 
         options.slice!(:address, :city, :lat, :levelCode, :limit, :lon, :minimumSchools, :radius, :schoolType, :state, :zip)
 
-        response = GreatSchools::API.get('schools/nearby', options)
+        response = GreatSchools::API.get('nearby-schools', options)
 
         Array.wrap(response).map { |school| new(school) }
       end
@@ -104,7 +108,7 @@ module GreatSchools # :nodoc:
       #             other listing requests like +GreatSchools::School#browse+
       #             and +GreatSchools::School#nearby+
       def profile(state, id)
-        response = GreatSchools::API.get("schools/#{state.upcase}/#{id}")
+        response = GreatSchools::API.get("schools/#{id}")
 
         new(response)
       end
