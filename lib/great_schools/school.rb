@@ -93,7 +93,7 @@ module GreatSchools # :nodoc:
 
         options.slice!(:address, :city, :lat, :level_codes, :limit, :lon, :distance, :school_type)
 
-        response = GreatSchools::API.get('nearby-schools', options)
+        response = GreatSchools::API.get('nearby-schools', options)['schools']
 
         Array.wrap(response).map { |school| new(school) }
       end
