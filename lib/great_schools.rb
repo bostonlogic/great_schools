@@ -49,6 +49,8 @@ module GreatSchools
 
       # The API access key, must be set before making any requests.
       attr_accessor :key
+      # The API version, defaults to V1.
+      attr_accessor :version
 
       # Makes an API request to +path+ with the supplied query +parameters+ (merges
       # in the API access +key+).
@@ -64,7 +66,7 @@ module GreatSchools
       def get(path, parameters = {})
         parameters.delete_if { |_,v| v.blank? }
 
-        response = Curl::Easy.http_get("#{DOMAIN}/#{path}?#{to_query_string(parameters)}") do |c|
+        response = Curl::Easy.http_get("#{DOMAIN}#{"/#{version}" if version}/#{path}?#{to_query_string(parameters)}") do |c|
           c.headers['x-api-key'] = key
           c.headers['Accept'] = 'application/xml'
         end
